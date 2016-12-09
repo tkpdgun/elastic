@@ -136,13 +136,15 @@ func (s *BulkService) bodyAsString() (string, error) {
 	var buf bytes.Buffer
 
 	for _, req := range s.requests {
-		source, err := req.Source()
-		if err != nil {
-			return "", err
-		}
-		for _, line := range source {
-			buf.WriteString(line)
-			buf.WriteByte('\n')
+		if req != nil {
+			source, err := req.Source()
+			if err != nil {
+				return "", err
+			}
+			for _, line := range source {
+				buf.WriteString(line)
+				buf.WriteByte('\n')
+			}
 		}
 	}
 
