@@ -135,7 +135,11 @@ func (s *BulkService) NumberOfActions() int {
 func (s *BulkService) bodyAsString() (string, error) {
 	var buf bytes.Buffer
 
-	for _, req := range s.requests {
+	// copy slice to make sure s.requests not appendable and changed during the process
+	tmp := make([]BulkableRequest, len(s.requests))
+	copy(tmp, s.requests)
+
+	for _, req := range tmp {
 		if req != nil {
 			source, err := req.Source()
 			if err != nil {
