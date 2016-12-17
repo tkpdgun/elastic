@@ -132,23 +132,24 @@ func (s *BulkService) NumberOfActions() int {
 	return len(s.requests)
 }
 
-func (s *BulkService) bodyAsString() (string, error) {
+func (s *BulkService) bodyAsString() (bufstr string, err error) {
 	var buf bytes.Buffer
 
-	// copy slice to make sure s.requests not appendable and changed during the process
-	tmp := make([]BulkableRequest, len(s.requests))
-	copy(tmp, s.requests)
+	defer func() {
+		if r := recover(); r != nil {
+			bufstr = ""
+			err = errors.New("panic: value method elastic.BulkUpdateRequest.Source called using nil *BulkUpdateRequest pointer")
+		}
+	}()
 
-	for _, req := range tmp {
-		if req != nil {
-			source, err := req.Source()
-			if err != nil {
-				return "", err
-			}
-			for _, line := range source {
-				buf.WriteString(line)
-				buf.WriteByte('\n')
-			}
+	for _, req := range s.requests {
+		source, err := req.Source()
+		if err != nil {
+			return "", err
+		}
+		for _, line := range source {
+			buf.WriteString(line)
+			buf.WriteByte('\n')
 		}
 	}
 
